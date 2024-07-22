@@ -334,12 +334,3 @@ final response = await ParseCloud.callFunction('listRooms', params: params);
 ```
 
 ---
-
-## Notes
-- **Authentication**: Certain functions require user authentication. Ensure that the user is logged in before making calls to those functions.
-- **Error Handling**: Proper error handling should be implemented in the mobile client to manage the responses effectively.
-
-## Conclusion
-This documentation provides a comprehensive guide to using the cloud functions available in this Parse Server application, along with code examples for Android, iOS, and Flutter. Make sure to follow best practices for handling user authentication and managing responses on the client-side.
-
----
