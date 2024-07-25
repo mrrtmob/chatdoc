@@ -3,7 +3,7 @@
 ## Overview
 
 This documentation outlines the functionality of Mimi Chat Application, which enables users to communicate through public and private chat rooms. The application is built using Parse Server and provides cloud functions to manage various features like room creation, message sending, and user management.
-
+Demo: https://parse-dev.evalley.io/chat
 ## User Interface Overview
 
 The application comprises two main sections:
