@@ -1,336 +1,239 @@
-# Chat Server API Documentation
+# Documentation for Mimi Chat Application
 
 ## Overview
-This document outlines the cloud functions available in the Parse Server application for managing rooms and messages, along with example implementations for Android, iOS, and Flutter.
+
+This documentation outlines the functionality of Mimi Chat Application, which enables users to communicate through public and private chat rooms. The application is built using Parse Server and provides cloud functions to manage various features like room creation, message sending, and user management.
+
+## User Interface Overview
+
+The application comprises two main sections:
+
+1. **User Management**: This section allows users to log in or log out using their phone number and password.
+2. **Chat Rooms**: Users can join public rooms or initiate private chats. The chat interface displays messages in real-time.
+
+### Key UI Components
+
+- **Login/Signup Form**: Input fields for phone number and password with a button to log in.
+- **Rooms Section**: Displays public rooms and private chats. Users can create new rooms or initiate private chats with other participants.
+- **Chat Screen**: Shows messages from the selected room. Users can send text messages, images, and audio messages.
 
 ## Cloud Functions
 
-### 1. `createRoom`
+Cloud functions are utilized to handle various functionalities required by the application, such as room management and message handling.
 
-- **Description**: Creates a new room.
-- **Parameters**:
-  - `name` (String): The name of the room.
-  - `createdBy` (String): The user ID of the creator.
-  - `users` (Array): An array of user IDs included in the room.
-- **Returns**: The newly created room object.
+### Public Room Functions
 
-**Example Calls**:
+#### 1. Create a Public Room
 
-#### Android
-```java
-ParseCloud.callFunctionInBackground("createRoom", params, new FunctionCallback<ParseObject>() {
-    @Override
-    public void done(ParseObject room, ParseException e) {
-        if (e == null) {
-            // room created successfully
-        }
-    }
+**Function Name**: `createPublicRoom`
+
+**Description**: Creates a new public chat room if a room with the same name does not already exist.
+
+**Parameters**:
+
+- `name` (String): The name of the room.
+- `createdBy` (String): The user ID of the creator.
+
+**Example Usage**:
+
+```javascript
+Parse.Cloud.run("createPublicRoom", { 
+  name: "General Chat", 
+  createdBy: "USER_ID_HERE" 
+}).then((room) => {
+  console.log("Room created successfully:", room);
+}).catch((error) => {
+  console.error("Error creating room:", error);
 });
 ```
 
-#### iOS
-```swift
-let params: [String: Any] = ["name": "Room 1", "createdBy": "userId1", "users": ["userId1"]]
-PFCloud.callFunction(inBackground: "createRoom", withParameters: params) { (result, error) in
-    if error == nil {
-        // room created successfully
-    }
-}
-```
+#### 2. List Rooms
 
-#### Flutter
-```dart
-final params = {
-  "name": "Room 1",
-  "createdBy": "userId1",
-  "users": ["userId1"],
-};
+**Function Name**: `listRooms`
 
-final response = await ParseCloud.callFunction('createRoom', params: params);
-```
+**Description**: Retrieves a list of public chat rooms.
 
----
+**Parameters**:
 
-### 2. `addUserToRoom`
+- `page` (Number): The page number for pagination (optional).
+- `limit` (Number): The number of rooms to return (optional).
 
-- **Description**: Adds a user to an existing room.
-- **Parameters**:
-  - `roomId` (String): The ID of the room.
-  - `userId` (String): The ID of the user to be added.
-- **Returns**: The updated room object.
+**Example Usage**:
 
-**Example Calls**:
-
-#### Android
-```java
-Map<String, String> params = new HashMap<>();
-params.put("roomId", roomId);
-params.put("userId", userId);
-ParseCloud.callFunctionInBackground("addUserToRoom", params, new FunctionCallback<ParseObject>() {
-    @Override
-    public void done(ParseObject room, ParseException e) {
-        if (e == null) {
-            // user added successfully
-        }
-    }
+```javascript
+Parse.Cloud.run("listRooms", { page: 1, limit: 10 }).then((response) => {
+  console.log("Rooms loaded:", response.results);
+}).catch((error) => {
+  console.error("Error loading rooms:", error);
 });
 ```
 
-#### iOS
-```swift
-let params: [String: Any] = ["roomId": roomId, "userId": userId]
-PFCloud.callFunction(inBackground: "addUserToRoom", withParameters: params) { (result, error) in
-    if error == nil {
-        // user added successfully
-    }
-}
-```
+#### 3. Fetch Chat Messages
 
-#### Flutter
-```dart
-final params = {
-  "roomId": roomId,
-  "userId": userId,
-};
+**Function Name**: `fetchChatMessages`
 
-final response = await ParseCloud.callFunction('addUserToRoom', params: params);
-```
+**Description**: Fetches messages from a specific public room.
 
----
+**Parameters**:
 
-### 3. `fetchChatMessages`
+- `roomId` (String): The ID of the room from which to fetch messages.
+- `page` (Number): The page number for pagination (optional).
+- `limit` (Number): The number of messages to return (optional).
 
-- **Description**: Fetches chat messages from a specific room with pagination.
-- **Parameters**:
-  - `roomId` (String): The ID of the room.
-  - `page` (Number, optional): The page number to fetch (default is 1).
-  - `limit` (Number, optional): The number of messages to retrieve per page (default is 50).
-- **Returns**: An object containing chat messages, pagination details, and total messages.
+**Example Usage**:
 
-**Example Calls**:
-
-#### Android
-```java
-Map<String, Object> params = new HashMap<>();
-params.put("roomId", roomId);
-params.put("page", 1);
-params.put("limit", 10);
-ParseCloud.callFunctionInBackground("fetchChatMessages", params, new FunctionCallback<Object>() {
-    @Override
-    public void done(Object result, ParseException e) {
-        if (e == null) {
-            // handle messages
-        }
-    }
+```javascript
+Parse.Cloud.run("fetchChatMessages", { 
+  roomId: "ROOM_ID_HERE", 
+  page: 1, 
+  limit: 50 
+}).then((response) => {
+  console.log("Messages loaded:", response.results);
+}).catch((error) => {
+  console.error("Error loading messages:", error);
 });
 ```
 
-#### iOS
-```swift
-let params: [String: Any] = ["roomId": roomId, "page": 1, "limit": 10]
-PFCloud.callFunction(inBackground: "fetchChatMessages", withParameters: params) { (result, error) in
-    if error == nil {
-        // handle messages
-    }
-}
-```
+#### 4. Create a Message
 
-#### Flutter
-```dart
-final params = {
-  "roomId": roomId,
-  "page": 1,
-  "limit": 10,
-};
+**Function Name**: `createMessage`
 
-final response = await ParseCloud.callFunction('fetchChatMessages', params: params);
-```
+**Description**: Sends a message to a specified public room.
 
----
+**Parameters**:
 
-### 4. `createPrivateRoom`
+- `roomId` (String): The ID of the room to send the message to.
+- `text` (String): The message content (optional).
+- `imageUrl` (String): URL of an image to attach (optional).
+- `userId` (String): The user ID of the message sender.
+- `username` (String): The username of the message sender.
 
-- **Description**: Creates a private room between two users.
-- **Parameters**:
-  - `otherUsername` (String): The username of the other user in the private room.
-  - `roomName` (String): The name of the private room.
-- **Returns**: The newly created private room object.
+**Example Usage**:
 
-**Note**: Requires user authentication.
-
-**Example Calls**:
-
-#### Android
-```java
-Map<String, String> params = new HashMap<>();
-params.put("otherUsername", otherUsername);
-params.put("roomName", roomName);
-ParseCloud.callFunctionInBackground("createPrivateRoom", params, new FunctionCallback<ParseObject>() {
-    @Override
-    public void done(ParseObject room, ParseException e) {
-        if (e == null) {
-            // private room created successfully
-        }
-    }
+```javascript
+Parse.Cloud.run("createMessage", { 
+  roomId: "ROOM_ID_HERE", 
+  text: "Hello, World!", 
+  imageUrl: null, 
+  userId: "USER_ID_HERE", 
+  username: "USERNAME_HERE" 
+}).then((message) => {
+  console.log("Message sent:", message);
+}).catch((error) => {
+  console.error("Error sending message:", error);
 });
 ```
 
-#### iOS
-```swift
-let params: [String: Any] = ["otherUsername": otherUsername, "roomName": roomName]
-PFCloud.callFunction(inBackground: "createPrivateRoom", withParameters: params) { (result, error) in
-    if error == nil {
-        // private room created successfully
-    }
-}
-```
+#### 5. Delete a Room
 
-#### Flutter
-```dart
-final params = {
-  "otherUsername": otherUsername,
-  "roomName": roomName,
-};
+**Function Name**: `deleteRoom`
 
-final response = await ParseCloud.callFunction('createPrivateRoom', params: params);
-```
+**Description**: Deletes a public room and all associated messages.
 
----
+**Parameters**:
 
-### 5. `listPrivateRooms`
+- `roomId` (String): The ID of the room to delete.
 
-- **Description**: Lists all private rooms the specified user is part of.
-- **Parameters**:
-  - `userId` (String): The ID of the user whose private rooms are to be listed.
-- **Returns**: An array of private room objects.
+**Example Usage**:
 
-**Example Calls**:
-
-#### Android
-```java
-Map<String, String> params = new HashMap<>();
-params.put("userId", userId);
-ParseCloud.callFunctionInBackground("listPrivateRooms", params, new FunctionCallback<List<ParseObject>>() {
-    @Override
-    public void done(List<ParseObject> rooms, ParseException e) {
-        if (e == null) {
-            // handle rooms
-        }
-    }
+```javascript
+Parse.Cloud.run("deleteRoom", { 
+  roomId: "ROOM_ID_HERE" 
+}).then((response) => {
+  console.log("Room deleted successfully:", response.message);
+}).catch((error) => {
+  console.error("Error deleting room:", error);
 });
 ```
 
-#### iOS
-```swift
-let params: [String: Any] = ["userId": userId]
-PFCloud.callFunction(inBackground: "listPrivateRooms", withParameters: params) { (result, error) in
-    if error == nil {
-        // handle rooms
-    }
-}
-```
+## Private Room Functions
 
-#### Flutter
-```dart
-final params = {
-  "userId": userId,
-};
+### Overview
 
-final response = await ParseCloud.callFunction('listPrivateRooms', params: params);
-```
+Private rooms allow users to engage in one-on-one chats securely. Each private room is uniquely identified by the involved users, ensuring that only these users can access the chat.
 
----
+### Functions for Private Rooms
 
-### 6. `createPublicRoom`
+#### 1. Create a Private Room
 
-- **Description**: Creates a public room.
-- **Parameters**:
-  - `name` (String): The name of the room.
-  - `createdBy` (String): The user ID of the creator.
-- **Returns**: The newly created public room object.
+**Function Name**: `createPrivateRoom`
 
-**Example Calls**:
+**Description**: Creates a new private chat room between two users if it doesn't already exist.
 
-#### Android
-```java
-Map<String, String> params = new HashMap<>();
-params.put("name", roomName);
-params.put("createdBy", createdBy);
-ParseCloud.callFunctionInBackground("createPublicRoom", params, new FunctionCallback<ParseObject>() {
-    @Override
-    public void done(ParseObject room, ParseException e) {
-        if (e == null) {
-            // public room created successfully
-        }
-    }
+**Parameters**:
+
+- `otherUsername` (String): The username of the other participant.
+- `roomName` (String): The name of the room (e.g., "Private: User1 & User2").
+- `currentUsername` (String): The username of the user creating the room.
+
+**Example Usage**:
+
+```javascript
+Parse.Cloud.run("createPrivateRoom", { 
+  otherUsername: "OtherUser", 
+  roomName: "Private: User1 & OtherUser", 
+  currentUsername: "User1" 
+}).then((room) => {
+  console.log("Private room created:", room);
+}).catch((error) => {
+  console.error("Error creating private room:", error);
 });
 ```
 
-#### iOS
-```swift
-let params: [String: Any] = ["name": roomName, "createdBy": createdBy]
-PFCloud.callFunction(inBackground: "createPublicRoom", withParameters: params) { (result, error) in
-    if error == nil {
-        // public room created successfully
-    }
-}
-```
+#### 2. List Private Rooms
 
-#### Flutter
-```dart
-final params = {
-  "name": roomName,
-  "createdBy": createdBy,
-};
+**Function Name**: `listPrivateRooms`
 
-final response = await ParseCloud.callFunction('createPublicRoom', params: params);
-```
+**Description**: Retrieves the list of private rooms for a specific user.
 
----
+**Parameters**:
 
-### 7. `listRooms`
+- `username` (String): The username of the user whose private rooms are to be retrieved.
 
-- **Description**: Lists all public rooms with pagination.
-- **Parameters**:
-  - `page` (Number, optional): The page number to fetch (default is 1).
-  - `limit` (Number, optional): The number of rooms to retrieve per page (default is 10).
-- **Returns**: An object containing public rooms, pagination details, and total rooms.
+**Example Usage**:
 
-**Example Calls**:
-
-#### Android
-```java
-Map<String, Object> params = new HashMap<>();
-params.put("page", 1);
-params.put("limit", 10);
-ParseCloud.callFunctionInBackground("listRooms", params, new FunctionCallback<Object>() {
-    @Override
-    public void done(Object result, ParseException e) {
-        if (e == null) {
-            // handle public rooms
-        }
-    }
+```javascript
+Parse.Cloud.run("listPrivateRooms", { 
+  username: "User1" 
+}).then((rooms) => {
+  console.log("Private rooms:", rooms);
+}).catch((error) => {
+  console.error("Error loading private rooms:", error);
 });
 ```
 
-#### iOS
-```swift
-let params: [String: Any] = ["page": 1, "limit": 10]
-PFCloud.callFunction(inBackground: "listRooms", withParameters: params) { (result, error) in
-    if error == nil {
-        // handle public rooms
-    }
+#### 3. Join a Private Room
+
+To join a private room selected by the user, you can utilize the `joinRoom` function as demonstrated.
+
+**Example Usage**:
+
+```javascript
+function joinPrivateRoom(room) {
+  // Assuming 'room' is an object representing the selected private room.
+  joinRoom(room);
 }
+
+// Example of joining a private room
+const selectedRoom = { id: "ROOM_ID_HERE", name: "Private: User1 & OtherUser", isPrivate: true };
+joinPrivateRoom(selectedRoom);
 ```
 
-#### Flutter
-```dart
-final params = {
-  "page": 1,
-  "limit": 10,
-};
+### Additional Notes
 
-final response = await ParseCloud.callFunction('listRooms', params: params);
-```
+- **Unique Room Identification**: Private rooms are created with a unique identifier based on the users involved. The system prevents the creation of duplicate rooms for the same user pairs.
+- **User Permissions**: The access control list (ACL) settings ensure that only the two users can read and write in their private rooms.
 
----
+## Summary of Cloud Functions
+
+| Function Name         | Description                                        | Example Usage                                                                                                                               |
+| --------------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createPublicRoom`  | Creates a new public chat room.                    | `Parse.Cloud.run("createPublicRoom", { name: "General Chat", createdBy: "USER_ID_HERE" });`                                               |
+| `listRooms`         | Retrieves public rooms for display.                | `Parse.Cloud.run("listRooms", { page: 1, limit: 10 });`                                                                                   |
+| `fetchChatMessages` | Fetches messages from a specified room.            | `Parse.Cloud.run("fetchChatMessages", { roomId: "ROOM_ID_HERE", page: 1, limit: 50 });`                                                   |
+| `createMessage`     | Sends a message to a specified room.               | `Parse.Cloud.run("createMessage", { roomId: "ROOM_ID_HERE", text: "Hello!", userId: "USER_ID_HERE", username: "USERNAME_HERE" });`        |
+| `deleteRoom`        | Deletes a room with all associated messages.       | `Parse.Cloud.run("deleteRoom", { roomId: "ROOM_ID_HERE" });`                                                                              |
+| `createPrivateRoom` | Creates a new private chat room between two users. | `Parse.Cloud.run("createPrivateRoom", { otherUsername: "OtherUser", roomName: "Private: User1 & OtherUser", currentUsername: "User1" });` |
+| `listPrivateRooms`  | Retrieves private rooms for a specific user.       | `Parse.Cloud.run("listPrivateRooms", { username: "User1" });`                                                                             |
+
+This documentation provides a comprehensive overview of the functionalities available in Mimi Chat Application, including user management, room management (both public and private), and messaging capabilities. The provided examples serve as a foundation for integrating and utilizing the cloud functions effectively within your application.
